@@ -70,6 +70,20 @@ function GetGroovyIndent()
     let prev = next_prev
   endwhile
 
+  " indent after lines ending in "["
+  if getline(prev) =~# '[' && getline(prev) !~# ']' && getline(v:lnum) !~# ']' && getline(v:lnum) !~# ':$'
+    return indent(prev) + &sw 
+  endif
+
+  " if line starts in "]", align with matching "["
+  if getline(v:lnum) =~ '^\s*]\s*\(//.*\|/\*.*\)\=$'
+    call cursor(v:lnum, 1)
+    silent normal %
+    let lnum = line('.')
+    if lnum < v:lnum
+      return indent(lnum)
+    endif
+  endif
 
   " Try to align "throws" lines for methods and "extends" and "implements" for
   " classes.
